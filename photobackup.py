@@ -58,6 +58,18 @@ def test():
     if password != PASSWORD:
         abort(403, "ERROR: wrong password!")
 
+    if not os.path.exists(MEDIA_ROOT):
+        abort(500, "ERROR: MEDIA_ROOT does not exist!")
+
+    testfile = os.path.join(MEDIA_ROOT, '.test_file_to_write')
+    try:
+        with open(testfile, 'w') as tf:
+            tf.write('')
+    except:
+        abort(500, "ERROR: can't write to MEDIA_ROOT!")
+    finally:
+        os.remove(testfile)
+
 
 if __name__ == '__main__':
     run(host='0.0.0.0', reloader=True)
