@@ -29,6 +29,11 @@ from photobackup_settings import MEDIA_ROOT, PASSWORD
 app = bottle.default_app()
 
 
+@route('/')
+def index():
+    return template('index.html')
+
+
 @route('/', method='POST')
 def save_image():
     password = request.forms.get('password')
@@ -43,16 +48,20 @@ def save_image():
     if not os.path.exists(path):
         debug("upfile path: " + path)
         upfile.save(path)
+        # check file size in request against written file size
+        filesize = -1
+        try:
+            filesize = int(request.forms.get('filesize'))
+        except TypeError:
+            abort(400, "ERROR: missing file size in the request!")
+
+        if filesize != os.stat(path).st_size:
+            abort(411, "ERROR: file sizes do not match!")
     else:
         warn("file " + path + " already exists")
 
 
-@route('/')
-def index():
-    return template('index')
-
-
-@route('/test')
+@route('/test', method='POST')
 def test():
     password = request.forms.get('password')
     if password != PASSWORD:
