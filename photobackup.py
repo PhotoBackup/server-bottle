@@ -46,8 +46,6 @@ def save_image():
 
     path = os.path.join(MEDIA_ROOT, upfile.raw_filename)
     if not os.path.exists(path):
-        debug("upfile path: " + path)
-        upfile.save(path)
         # check file size in request against written file size
         filesize = -1
         try:
@@ -57,6 +55,10 @@ def save_image():
 
         if filesize != os.stat(path).st_size:
             abort(411, "ERROR: file sizes do not match!")
+
+        debug("upfile path: " + path)
+        upfile.save(path)
+
     else:
         warn("file " + path + " already exists")
 
