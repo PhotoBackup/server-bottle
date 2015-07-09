@@ -21,12 +21,17 @@ import os
 # pipped
 from bottle import abort, request, route, run, template
 import bottle
-from logbook import debug, warn
+from logbook import info, warn, error
 # local
 from photobackup_settings import MEDIA_ROOT, PASSWORD
 
 
 app = bottle.default_app()
+
+
+def end(code, message):
+    error(message)
+    abort(code, message)
 
 
 @route('/')
@@ -38,26 +43,27 @@ def index():
 def save_image():
     password = request.forms.get('password')
     if password != PASSWORD:
-        abort(403, "ERROR: wrong password!")
+        end(403, "wrong password!")
 
     upfile = request.files.get('upfile')
     if not upfile:
-        abort(401, "ERROR: no file in the request!")
+        end(401, "no file in the request!")
 
     path = os.path.join(MEDIA_ROOT, upfile.raw_filename)
     if not os.path.exists(path):
-        # check file size in request against written file size
         filesize = -1
         try:
             filesize = int(request.forms.get('filesize'))
         except TypeError:
-            abort(400, "ERROR: missing file size in the request!")
+            end(400, "missing file size in the request!")
 
-        if filesize != os.stat(path).st_size:
-            abort(411, "ERROR: file sizes do not match!")
-
-        debug("upfile path: " + path)
+        # save file
+        info("upfile path: " + path)
         upfile.save(path)
+
+        # check file size in request against written file size
+        if filesize != os.stat(path).st_size:
+            end(411, "file sizes do not match!")
 
     else:
         warn("file " + path + " already exists")
@@ -67,20 +73,21 @@ def save_image():
 def test():
     password = request.forms.get('password')
     if password != PASSWORD:
-        abort(403, "ERROR: wrong password!")
+        end(403, "wrong password!")
 
     if not os.path.exists(MEDIA_ROOT):
-        abort(500, "ERROR: MEDIA_ROOT does not exist!")
+        end(500, "MEDIA_ROOT does not exist!")
 
     testfile = os.path.join(MEDIA_ROOT, '.test_file_to_write')
     try:
         with open(testfile, 'w') as tf:
             tf.write('')
     except:
-        abort(500, "ERROR: can't write to MEDIA_ROOT!")
+        end(500, "Can't write to MEDIA_ROOT!")
     finally:
         os.remove(testfile)
+        info("Test succeeded \o/")
 
 
 if __name__ == '__main__':
-    run(host='0.0.0.0', reloader=True)
+    run(reloader=True)
