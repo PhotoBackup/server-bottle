@@ -1,7 +1,7 @@
 # PhotoBackup bottle server
 The simplest PhotoBackup server, made with [bottle](http://bottlepy.org/) to
-work with [Python 3](https://www.python.org/).
-
+work with [Python 3](https://www.python.org/). It follows the
+[official API](https://github.com/PhotoBackup/api/blob/master/api.raml).
 
 ## Installation
 First, build the virtual environment:
