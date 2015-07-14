@@ -16,17 +16,56 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+"""PhotoBackup Python server.
+
+Usage:
+  photobackup init
+  photobackup run
+  photobackup (-h | --help)
+  photobackup --version
+
+Options:
+  -h --help     Show this screen.
+  --version     Show version.
+"""
+
 # stlib
+import configparser
 import os
+import sys
 # pipped
-from bottle import abort, request, route, run, template
+from bottle import abort, redirect, request, route, run
 import bottle
+from docopt import docopt
 from logbook import info, warn, error
 # local
-from photobackup_settings import MEDIA_ROOT, PASSWORD
+from . import __version__, init
 
 
-app = bottle.default_app()
+def init_config():
+    """ Launch init.py script to create configuration file on user's disk. """
+    init.init()
+    sys.exit("\nCreated, now launch PhotoBackup server with 'photobackup run'")
+
+
+def read_config():
+    """ Set configuration file data into local dictionnary. """
+    home = os.path.expanduser("~")
+    filename = os.path.join(home, '.photobackup')
+    config = configparser.ConfigParser()
+    try:
+        config.read_file(open(filename))
+    except OSError:
+        error("can't read configuration file, running 'photobackup init'")
+        init_config()
+
+    # Check if all keys are in the file
+    keys = ['MediaRoot', 'Password', 'Port']
+    for key in keys:
+        if key not in config['photobackup']:
+            error("config file incomplete, please regenerate!")
+            init_config()
+    return config['photobackup']
 
 
 def end(code, message):
@@ -34,22 +73,27 @@ def end(code, message):
     abort(code, message)
 
 
+config = read_config()
+app = bottle.default_app()
+
+
+# Bottle routes
 @route('/')
 def index():
-    return template('index.html')
+    redirect("https://photobackup.github.io/")
 
 
 @route('/', method='POST')
 def save_image():
     password = request.forms.get('password')
-    if password != PASSWORD:
+    if password != config['Password']:
         end(403, "wrong password!")
 
     upfile = request.files.get('upfile')
     if not upfile:
         end(401, "no file in the request!")
 
-    path = os.path.join(MEDIA_ROOT, upfile.raw_filename)
+    path = os.path.join(config['MediaRoot'], upfile.raw_filename)
     if not os.path.exists(path):
         filesize = -1
         try:
@@ -72,13 +116,13 @@ def save_image():
 @route('/test', method='POST')
 def test():
     password = request.forms.get('password')
-    if password != PASSWORD:
+    if password != config['Password']:
         end(403, "wrong password!")
 
-    if not os.path.exists(MEDIA_ROOT):
+    if not os.path.exists(config['MediaRoot']):
         end(500, "MEDIA_ROOT does not exist!")
 
-    testfile = os.path.join(MEDIA_ROOT, '.test_file_to_write')
+    testfile = os.path.join(config['MediaRoot'], '.test_file_to_write')
     try:
         with open(testfile, 'w') as tf:
             tf.write('')
@@ -89,5 +133,13 @@ def test():
         info("Test succeeded \o/")
 
 
+def main():
+    arguments = docopt(__doc__, version='PhotoBackup ' + __version__)
+    if (arguments['init']):
+        init_config()
+    elif (arguments['run']):
+        run(host="0.0.0.0", port=config['Port'], reloader=True)
+
+
 if __name__ == '__main__':
-    run(reloader=True)
+    main()

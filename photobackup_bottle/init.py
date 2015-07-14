@@ -17,13 +17,12 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 # stlib
+import configparser
 import getpass
 import hashlib
 import os
 import pwd
 import stat
-# pipped
-from logbook import notice
 
 
 def writable_by_user(dirname, username):
@@ -58,12 +57,16 @@ def writable_by_group(dirname, groupname):
     return False
 
 
-def main():
+def init():
+    print("""===============================
+PhotoBackup_bottle init process
+===============================""")
+
     # ask for the upload directory (should be writable by the server)
     media_root = input("The directory where to put the pictures" +
                        " (should be writable by the server you use): ")
     if not os.path.isdir(media_root):
-        notice("Directory {} does not exist, creating it".format(media_root))
+        print("Directory {} does not exist, creating it".format(media_root))
         os.mkdir(media_root)
 
     # test for user writability of the directory
@@ -79,12 +82,16 @@ def main():
     password = getpass.getpass(prompt='The server password: ')
     passhash = hashlib.sha512(password.encode('utf-8')).hexdigest()
 
-    filename = 'photobackup_settings.py'
-    with open(filename, 'w') as settings:
-        settings.write("# generated settings for PhotoBackup Bottle server\n")
-        settings.write("MEDIA_ROOT = '{}'\n".format(media_root))
-        settings.write("PASSWORD = '{}'\n".format(passhash))
+    # save in config file
+    home = os.path.expanduser("~")
+    filename = os.path.join(home, '.photobackup')
+    config = configparser.ConfigParser()
+    config['photobackup'] = {'MediaRoot': media_root,
+                             'Password': passhash,
+                             'Port': 8420}
+    with open(filename, 'w') as configfile:
+        config.write(configfile)
 
 
 if __name__ == '__main__':
-    main()
+    init()
