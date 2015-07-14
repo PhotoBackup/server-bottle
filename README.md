@@ -20,9 +20,9 @@ It fails gracefully if it is not, just warning you to make it work properly.
 This step creates a `photobackup_settings.py` file in the current directory,
 containing:
 
-* `MEDIA_ROOT`, the directory where the pictures are written in ;
-* `PASSWORD`, the SHA-512 hashed password ;
-* `PORT`, the port (default is 8420).
+* `MediaRoot`, the directory where the pictures are written in ;
+* `Password`, the SHA-512 hashed password ;
+* `Port`, the port (default is 8420).
 
 ## Usage
 
