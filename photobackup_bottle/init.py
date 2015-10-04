@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 # Copyright (C) 2013-2015 Stéphane Péchard.
 #
 # This file is part of PhotoBackup.
@@ -63,14 +64,15 @@ PhotoBackup_bottle init process
 ===============================""")
 
     # ask for the upload directory (should be writable by the server)
-    media_root = input("The directory where to put the pictures" +
-                       " (should be writable by the server you use): ")
+    media_root = raw_input("The directory where to put the pictures" +
+                           " (should be writable by the server you use): ")
+    media_root = os.path.expanduser(media_root)
     if not os.path.isdir(media_root):
         print("Directory {} does not exist, creating it".format(media_root))
         os.mkdir(media_root)
 
     # test for user writability of the directory
-    server_user = input("Owner of the directory [www-data]: ")
+    server_user = raw_input("Owner of the directory [www-data]: ")
     if not server_user:
         server_user = 'www-data'
     if not writable_by_user(media_root, server_user) and \
@@ -83,13 +85,11 @@ PhotoBackup_bottle init process
     passhash = hashlib.sha512(password.encode('utf-8')).hexdigest()
 
     # save in config file
-    home = os.path.expanduser("~")
-    filename = os.path.join(home, '.photobackup')
     config = configparser.ConfigParser()
     config['photobackup'] = {'MediaRoot': media_root,
                              'Password': passhash,
                              'Port': 8420}
-    with open(filename, 'w') as configfile:
+    with open(os.path.expanduser("~/.photobackup"), 'w') as configfile:
         config.write(configfile)
 
 
