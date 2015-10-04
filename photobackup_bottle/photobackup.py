@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # Copyright (C) 2013-2015 Stéphane Péchard.
 #
 # This file is part of PhotoBackup.
@@ -73,10 +74,6 @@ def end(code, message):
     abort(code, message)
 
 
-config = read_config()
-app = bottle.default_app()
-
-
 # Bottle routes
 @route('/')
 def index():
@@ -138,6 +135,9 @@ def main():
     if (arguments['init']):
         init_config()
     elif (arguments['run']):
+        global config, app
+        config = read_config()
+        app = bottle.default_app()
         run(host="0.0.0.0", port=config['Port'], reloader=True)
 
 
