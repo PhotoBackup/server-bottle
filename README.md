@@ -1,4 +1,4 @@
-# PhotoBackup Python server
+#  The Python PhotoBackup server implementation 
 
 The Python3 implementation of PhotoBackup server, made with
 [bottle](http://bottlepy.org/). It follows the
