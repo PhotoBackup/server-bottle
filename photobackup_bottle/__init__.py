@@ -4,4 +4,4 @@
     This is the only module of PhotoBackup's bottle server.
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
