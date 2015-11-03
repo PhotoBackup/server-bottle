@@ -34,6 +34,7 @@ import configparser
 import os
 import sys
 # pipped
+import bcrypt
 from bottle import abort, redirect, request, route, run
 import bottle
 from docopt import docopt
@@ -50,9 +51,9 @@ def init_config():
 
 def read_config():
     """ Set configuration file data into local dictionnary. """
-    home = os.path.expanduser("~")
-    filename = os.path.join(home, '.photobackup')
-    config = configparser.ConfigParser()
+    filename = os.path.expanduser("~/.photobackup")
+    config = configparser.RawConfigParser()
+    config.optionxform = lambda option: option  # to keep case of keys
     try:
         config.read_file(open(filename))
     except OSError:
@@ -60,7 +61,7 @@ def read_config():
         init_config()
 
     # Check if all keys are in the file
-    keys = ['MediaRoot', 'Password', 'Port']
+    keys = ['MediaRoot', 'Password', 'Port', 'PasswordBcrypt']
     for key in keys:
         if key not in config['photobackup']:
             error("config file incomplete, please regenerate!")
@@ -71,6 +72,19 @@ def read_config():
 def end(code, message):
     error(message)
     abort(code, message)
+
+
+def validate_password(request):
+    password = request.forms.get('password').encode('utf-8')
+
+    if 'PasswordBcrypt' in config:
+        passcrypt = config['PasswordBcrypt'].encode('utf-8')
+        if bcrypt.hashpw(password, passcrypt) != passcrypt:
+            end(403, "wrong password!")
+    elif 'Password' in config and config['Password'] != password:
+        end(403, "wrong password!")
+    else:
+        end(401, "There's no password in server configuration!")
 
 
 config = read_config()
@@ -85,21 +99,21 @@ def index():
 
 @route('/', method='POST')
 def save_image():
-    password = request.forms.get('password')
-    if password != config['Password']:
-        end(403, "wrong password!")
+    validate_password(request)
 
     upfile = request.files.get('upfile')
     if not upfile:
         end(401, "no file in the request!")
 
+    filesize = -1
+    try:
+        filesize = int(request.forms.get('filesize'))
+    except TypeError:
+        end(400, "Missing file size in the request!")
+
+    # handle file
     path = os.path.join(config['MediaRoot'], upfile.raw_filename)
     if not os.path.exists(path):
-        filesize = -1
-        try:
-            filesize = int(request.forms.get('filesize'))
-        except TypeError:
-            end(400, "missing file size in the request!")
 
         # save file
         info("upfile path: " + path)
@@ -109,25 +123,27 @@ def save_image():
         if filesize != os.stat(path).st_size:
             end(411, "file sizes do not match!")
 
+    elif filesize == os.stat(path).st_size:
+        end(409, "file exists and is complete")
+
     else:
-        warn("file " + path + " already exists")
+        warn("file " + path + " is incomplete, resaving!")
+        upfile.save(path)
 
 
 @route('/test', method='POST')
 def test():
-    password = request.forms.get('password')
-    if password != config['Password']:
-        end(403, "wrong password!")
+    validate_password(request)
 
     if not os.path.exists(config['MediaRoot']):
-        end(500, "MEDIA_ROOT does not exist!")
+        end(500, "'MediaRoot' directory does not exist!")
 
     testfile = os.path.join(config['MediaRoot'], '.test_file_to_write')
     try:
         with open(testfile, 'w') as tf:
             tf.write('')
     except:
-        end(500, "Can't write to MEDIA_ROOT!")
+        end(500, "Can't write to 'MediaRoot' directory!")
     finally:
         os.remove(testfile)
         info("Test succeeded \o/")
@@ -138,7 +154,7 @@ def main():
     if (arguments['init']):
         init_config()
     elif (arguments['run']):
-        run(host="0.0.0.0", port=config['Port'], reloader=True)
+        run(port=config['Port'])
 
 
 if __name__ == '__main__':

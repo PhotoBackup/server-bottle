@@ -23,6 +23,8 @@ import hashlib
 import os
 import pwd
 import stat
+# pipped
+import bcrypt
 
 
 def writable_by_user(dirname, username):
@@ -80,16 +82,19 @@ PhotoBackup_bottle init process
 
     # ask a password for the server
     password = getpass.getpass(prompt='The server password: ')
-    passhash = hashlib.sha512(password.encode('utf-8')).hexdigest()
+    pass_sha = hashlib.sha512(
+        password.encode('utf-8')).hexdigest().encode('utf-8')
+    passhash = bcrypt.hashpw(pass_sha, bcrypt.gensalt())
 
     # save in config file
-    home = os.path.expanduser("~")
-    filename = os.path.join(home, '.photobackup')
     config = configparser.ConfigParser()
-    config['photobackup'] = {'MediaRoot': media_root,
-                             'Password': passhash,
+    config.optionxform = str  # to keep case of keys
+    config['photobackup'] = {'BindAddress': '127.0.0.1',
+                             'MediaRoot': media_root,
+                             'Password': pass_sha.decode(),
+                             'PasswordBcrypt': passhash.decode(),
                              'Port': 8420}
-    with open(filename, 'w') as configfile:
+    with open(os.path.expanduser("~/.photobackup"), 'w') as configfile:
         config.write(configfile)
 
 

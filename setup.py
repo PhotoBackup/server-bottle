@@ -20,7 +20,7 @@ setup(
     keywords='pictures photographs mobile backup',
     packages=find_packages(),
     include_package_data=True,
-    install_requires=['bottle', 'docopt', 'logbook'],
+    install_requires=['bcrypt', 'bottle', 'docopt', 'logbook'],
 
     classifiers=[
         'Development Status :: 3 - Alpha',
