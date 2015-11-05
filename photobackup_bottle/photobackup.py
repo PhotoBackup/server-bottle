@@ -74,7 +74,7 @@ def end(code, message):
     abort(code, message)
 
 
-def validate_password(request):
+def validate_password(request, isTest = False):
     password = request.forms.get('password').encode('utf-8')
 
     if 'PasswordBcrypt' in config:
@@ -83,7 +83,7 @@ def validate_password(request):
             end(403, "wrong password!")
     elif 'Password' in config and config['Password'] != password:
         end(403, "wrong password!")
-    else:
+    elif isTest:
         end(401, "There's no password in server configuration!")
 
 
@@ -133,7 +133,7 @@ def save_image():
 
 @route('/test', method='POST')
 def test():
-    validate_password(request)
+    validate_password(request, True)
 
     if not os.path.exists(config['MediaRoot']):
         end(500, "'MediaRoot' directory does not exist!")
