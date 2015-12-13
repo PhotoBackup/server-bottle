@@ -61,7 +61,7 @@ def read_config():
         init_config()
 
     # Check if all keys are in the file
-    keys = ['MediaRoot', 'Password', 'Port', 'PasswordBcrypt']
+    keys = ['BindAddress', 'MediaRoot', 'Password', 'PasswordBcrypt', 'Port']
     for key in keys:
         if key not in config['photobackup']:
             error("config file incomplete, please regenerate!")
@@ -154,7 +154,7 @@ def main():
     if (arguments['init']):
         init_config()
     elif (arguments['run']):
-        run(port=config['Port'])
+        run(port=config['Port'], host=config['BindAddress'])
 
 
 if __name__ == '__main__':
