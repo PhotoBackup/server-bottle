@@ -142,7 +142,7 @@ def test():
     try:
         with open(testfile, 'w') as tf:
             tf.write('')
-    except:
+    except EnvironmentError:
         end(500, "Can't write to 'MediaRoot' directory!")
     finally:
         os.remove(testfile)
