@@ -32,7 +32,7 @@ def writable_by_user(dirname, username):
     try:
         uid = pwd.getpwnam(username).pw_uid
     except KeyError:
-        print('[ERROR] User {} does not exist!'.format(username))
+        print('[ERROR] User {0} does not exist!'.format(username))
         return False
 
     dir_stat = os.stat(dirname)
@@ -48,7 +48,7 @@ def writable_by_group(dirname, groupname):
     try:
         gid = pwd.getpwnam(groupname).pw_gid
     except KeyError:
-        print('[ERROR] Group {} does not exist!'.format(groupname))
+        print('[ERROR] Group {0} does not exist!'.format(groupname))
         return False
 
     dir_stat = os.stat(dirname)
@@ -68,7 +68,7 @@ PhotoBackup_bottle init process
     media_root = input("The directory where to put the pictures" +
                        " (should be writable by the server you use): ")
     if not os.path.isdir(media_root):
-        print("Directory {} does not exist, creating it".format(media_root))
+        print("Directory {0} does not exist, creating it".format(media_root))
         os.mkdir(media_root)
 
     # test for user writability of the directory
@@ -77,7 +77,7 @@ PhotoBackup_bottle init process
         server_user = 'www-data'
     if not writable_by_user(media_root, server_user) and \
             not writable_by_group(media_root, server_user):
-        print('[INFO] Directory {} is not writable by {}, check it!'
+        print('[INFO] Directory {0} is not writable by {1}, check it!'
               .format(media_root, server_user))
 
     # ask a password for the server
