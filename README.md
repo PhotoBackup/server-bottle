@@ -1,3 +1,5 @@
+[![Python Version](https://img.shields.io/badge/Python-3-brightgreen.svg?style=plastic)](http://python.org) [![Code Issues](https://www.quantifiedcode.com/api/v1/project/0066628ce3954e079603dfeafdf5b077/badge.svg)](https://www.quantifiedcode.com/app/project/0066628ce3954e079603dfeafdf5b077)
+
 #  The Python PhotoBackup server implementation 
 
 The Python3 implementation of PhotoBackup server, made with
