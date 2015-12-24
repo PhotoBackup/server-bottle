@@ -70,11 +70,13 @@ def read_config():
 
 
 def end(code, message):
+    """ Aborts the request and returns the given error. """
     error(message)
     abort(code, message)
 
 
 def validate_password(request, isTest = False):
+    """ Validates the password given in the request against the stored Bcrypted one. """
     password = request.forms.get('password').encode('utf-8')
 
     if 'PasswordBcrypt' in config:
@@ -94,11 +96,13 @@ app = bottle.default_app()
 # Bottle routes
 @route('/')
 def index():
+    """ Redirects to the PhotoBackup website. """
     redirect("https://photobackup.github.io/")
 
 
 @route('/', method='POST')
 def save_image():
+    """ Saves the given image to the parameterized directory. """
     validate_password(request)
 
     upfile = request.files.get('upfile')
@@ -133,6 +137,7 @@ def save_image():
 
 @route('/test', method='POST')
 def test():
+    """ Tests the server capabilities to handle POST requests. """
     validate_password(request, True)
 
     if not os.path.exists(config['MediaRoot']):
@@ -150,6 +155,7 @@ def test():
 
 
 def main():
+    """ Prepares and launches the bottle app. """
     arguments = docopt(__doc__, version='PhotoBackup ' + __version__)
     if (arguments['init']):
         init_config()
