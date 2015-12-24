@@ -56,7 +56,7 @@ def read_config():
     config.optionxform = lambda option: option  # to keep case of keys
     try:
         config.read_file(open(filename))
-    except OSError:
+    except EnvironmentError:
         error("can't read configuration file, running 'photobackup init'")
         init_config()
 
