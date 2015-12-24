@@ -28,6 +28,7 @@ import bcrypt
 
 
 def writable_by_user(dirname, username):
+    """ Checks if the given directory is writable by the user. """
     uid = 0
     try:
         uid = pwd.getpwnam(username).pw_uid
@@ -44,6 +45,7 @@ def writable_by_user(dirname, username):
 
 
 def writable_by_group(dirname, groupname):
+    """ Checks if the given directory is writable by the group. """
     gid = 0
     try:
         gid = pwd.getpwnam(groupname).pw_gid
@@ -60,6 +62,7 @@ def writable_by_group(dirname, groupname):
 
 
 def init():
+    """ Initializes the PhotoBackup configuration file. """
     print("""===============================
 PhotoBackup_bottle init process
 ===============================""")
