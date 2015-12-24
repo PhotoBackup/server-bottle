@@ -2,6 +2,7 @@
 [![PyPI version](https://badge.fury.io/py/photobackup-bottle.svg)](https://badge.fury.io/py/photobackup-bottle)
 [![Build Status](https://travis-ci.org/PhotoBackup/server-bottle.svg?branch=master)](https://travis-ci.org/PhotoBackup/server-bottle)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/0066628ce3954e079603dfeafdf5b077/badge.svg)](https://www.quantifiedcode.com/app/project/0066628ce3954e079603dfeafdf5b077)
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/PhotoBackup/server-bottle/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 #  The Python PhotoBackup server implementation 
 
@@ -42,7 +43,3 @@ By default, it runs on host `127.0.0.1`, port `8420` and reloads automatically.
 ## Production
 
 To put in production, use [Nginx](http://nginx.org/) to bind a sever name to `http://127.0.0.1:8420`.
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/PhotoBackup/server-bottle/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
