@@ -42,3 +42,7 @@ By default, it runs on host `127.0.0.1`, port `8420` and reloads automatically.
 ## Production
 
 To put in production, use [Nginx](http://nginx.org/) to bind a sever name to `http://127.0.0.1:8420`.
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/PhotoBackup/server-bottle/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
