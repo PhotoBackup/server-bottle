@@ -1,9 +1,10 @@
-[![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/PhotoBackup)
 [![Python Version](https://img.shields.io/badge/Python-3-brightgreen.svg?style=plastic)](http://python.org)
 [![PyPI version](https://badge.fury.io/py/photobackup-bottle.svg)](https://badge.fury.io/py/photobackup-bottle)
 [![Build Status](https://travis-ci.org/PhotoBackup/server-bottle.svg?branch=master)](https://travis-ci.org/PhotoBackup/server-bottle)
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/0066628ce3954e079603dfeafdf5b077/badge.svg)](https://www.quantifiedcode.com/app/project/0066628ce3954e079603dfeafdf5b077)
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/PhotoBackup/server-bottle/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
+Join our online chat at [![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/PhotoBackup)
 
 #  The Python PhotoBackup server implementation 
 
