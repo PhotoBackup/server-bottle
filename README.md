@@ -1,3 +1,4 @@
+[![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/PhotoBackup)
 [![Python Version](https://img.shields.io/badge/Python-3-brightgreen.svg?style=plastic)](http://python.org)
 [![PyPI version](https://badge.fury.io/py/photobackup-bottle.svg)](https://badge.fury.io/py/photobackup-bottle)
 [![Build Status](https://travis-ci.org/PhotoBackup/server-bottle.svg?branch=master)](https://travis-ci.org/PhotoBackup/server-bottle)
