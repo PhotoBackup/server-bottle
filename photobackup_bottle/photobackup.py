@@ -45,6 +45,7 @@ from . import __version__, init
 
 
 def create_logger():
+    """ Creates the logger fpr this module. """
     StreamHandler(sys.stdout).push_application()
     return Logger('PhotoBackup')
 
@@ -95,6 +96,7 @@ def validate_password(request, isTest = False):
 
 
 def save_file(upfile, filesize):
+    """ Saves the sent file locally. """
     path = os.path.join(config['MediaRoot'], upfile.raw_filename)
     if not os.path.exists(path):
 
