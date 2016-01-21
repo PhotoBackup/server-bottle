@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# Copyright (C) 2013-2015 Stéphane Péchard.
+# Copyright (C) 2013-2016 Stéphane Péchard.
 #
 # This file is part of PhotoBackup.
 #
@@ -16,6 +16,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
+""" PhotoBackup Python server initialization module.
+
+    It asks the user for configuration and writes it
+    to a .ini file.
+"""
+
 # stlib
 import configparser
 import getpass
@@ -27,35 +33,21 @@ import stat
 import bcrypt
 
 
-def writable_by_user(dirname, username):
-    """ Checks if the given directory is writable by the user. """
-    uid = 0
+def writable_by(dirname, name, user_or_group):
+    """ Checks if the given directory is writable by the named user or group.
+        user_or_group is a boolean with True for a user and False for a group. """
     try:
-        uid = pwd.getpwnam(username).pw_uid
+        pwnam = pwd.getpwnam(name)
     except KeyError:
-        print('[ERROR] User {0} does not exist!'.format(username))
+        print('[ERROR] User or group {0} does not exist!'.format(name))
         return False
+    ugid = pwnam.pw_uid if user_or_group else pwnam.pw_gid
 
     dir_stat = os.stat(dirname)
-    if ((dir_stat[stat.ST_UID] == uid) and
-            (dir_stat[stat.ST_MODE] & stat.S_IWUSR)):
-        return True
+    ug_stat = dir_stat[stat.ST_UID] if user_or_group else dir_stat[stat.ST_GID]
+    iw_stat = stat.S_IWUSR if user_or_group else stat.S_IWGRP
 
-    return False
-
-
-def writable_by_group(dirname, groupname):
-    """ Checks if the given directory is writable by the group. """
-    gid = 0
-    try:
-        gid = pwd.getpwnam(groupname).pw_gid
-    except KeyError:
-        print('[ERROR] Group {0} does not exist!'.format(groupname))
-        return False
-
-    dir_stat = os.stat(dirname)
-    if ((dir_stat[stat.ST_GID] == gid) and
-            (dir_stat[stat.ST_MODE] & stat.S_IWGRP)):
+    if ((ug_stat == ugid) and (dir_stat[stat.ST_MODE] & iw_stat)):
         return True
 
     return False
@@ -70,16 +62,18 @@ PhotoBackup_bottle init process
     # ask for the upload directory (should be writable by the server)
     media_root = input("The directory where to put the pictures" +
                        " (should be writable by the server you use): ")
-    if not os.path.isdir(media_root):
-        print("Directory {0} does not exist, creating it".format(media_root))
+    try:
         os.mkdir(media_root)
+        print("Directory {0} does not exist, creating it".format(media_root))
+    except OSError:
+        print("Directory already exists")
 
     # test for user writability of the directory
     server_user = input("Owner of the directory [www-data]: ")
     if not server_user:
         server_user = 'www-data'
-    if not writable_by_user(media_root, server_user) and \
-            not writable_by_group(media_root, server_user):
+    if not writable_by(media_root, server_user, True) and \
+            not writable_by(media_root, server_user, False):
         print('[INFO] Directory {0} is not writable by {1}, check it!'
               .format(media_root, server_user))
 

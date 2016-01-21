@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (C) 2013-2015 Stéphane Péchard.
+# Copyright (C) 2013-2016 Stéphane Péchard.
 #
 # This file is part of PhotoBackup.
 #
@@ -38,9 +38,15 @@ import bcrypt
 from bottle import abort, redirect, request, route, run
 import bottle
 from docopt import docopt
-from logbook import info, warn, error
+from logbook import info, warn, error, Logger, StreamHandler
 # local
 from . import __version__, init
+
+
+
+def create_logger():
+    StreamHandler(sys.stdout).push_application()
+    return Logger('PhotoBackup')
 
 
 def init_config():
@@ -60,12 +66,11 @@ def read_config():
         error("can't read configuration file, running 'photobackup init'")
         init_config()
 
-    # Check if all keys are in the file
+    # Check if mandatory keys are in the file
     keys = ['BindAddress', 'MediaRoot', 'Password', 'PasswordBcrypt', 'Port']
-    for key in keys:
-        if key not in config['photobackup']:
-            error("config file incomplete, please regenerate!")
-            init_config()
+    if set(keys) > set(config['photobackup']):
+        error("config file incomplete, please regenerate!")
+        init_config()
     return config['photobackup']
 
 
@@ -89,8 +94,24 @@ def validate_password(request, isTest = False):
         end(401, "There's no password in server configuration!")
 
 
-config = read_config()
-app = bottle.default_app()
+def save_file(upfile, filesize):
+    path = os.path.join(config['MediaRoot'], upfile.raw_filename)
+    if not os.path.exists(path):
+
+        # save file
+        info("upfile path: " + path)
+        upfile.save(path)
+
+        # check file size in request against written file size
+        if filesize != os.stat(path).st_size:
+            end(411, "file sizes do not match!")
+
+    elif filesize == os.stat(path).st_size:
+        end(409, "file exists and is complete")
+
+    else:
+        warn("file " + path + " is incomplete, resaving!")
+        upfile.save(path)
 
 
 # Bottle routes
@@ -115,24 +136,7 @@ def save_image():
     except TypeError:
         end(400, "Missing file size in the request!")
 
-    # handle file
-    path = os.path.join(config['MediaRoot'], upfile.raw_filename)
-    if not os.path.exists(path):
-
-        # save file
-        info("upfile path: " + path)
-        upfile.save(path)
-
-        # check file size in request against written file size
-        if filesize != os.stat(path).st_size:
-            end(411, "file sizes do not match!")
-
-    elif filesize == os.stat(path).st_size:
-        end(409, "file exists and is complete")
-
-    else:
-        warn("file " + path + " is incomplete, resaving!")
-        upfile.save(path)
+    save_file(upfile, filesize)
 
 
 @route('/test', method='POST')
@@ -154,13 +158,18 @@ def test():
         info("Test succeeded \o/")
 
 
+log = create_logger()
+config = read_config()
+
 def main():
     """ Prepares and launches the bottle app. """
+    app = bottle.default_app()
     arguments = docopt(__doc__, version='PhotoBackup ' + __version__)
+
     if (arguments['init']):
         init_config()
     elif (arguments['run']):
-        run(port=config['Port'], host=config['BindAddress'])
+        app.run(port=config['Port'], host=config['BindAddress'])
 
 
 if __name__ == '__main__':
