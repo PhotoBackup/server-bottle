@@ -4,6 +4,8 @@
 [![Code Issues](https://www.quantifiedcode.com/api/v1/project/0066628ce3954e079603dfeafdf5b077/badge.svg)](https://www.quantifiedcode.com/app/project/0066628ce3954e079603dfeafdf5b077)
 [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/PhotoBackup/server-bottle/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
+Join our online chat at [![Gitter](https://badges.gitter.im/gitterHQ/gitter.svg)](https://gitter.im/PhotoBackup)
+
 #  The Python PhotoBackup server implementation 
 
 The Python3 implementation of PhotoBackup server, made with
