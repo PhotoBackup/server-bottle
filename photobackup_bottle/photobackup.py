@@ -69,9 +69,14 @@ def read_config():
 
     # Check if mandatory keys are in the file
     keys = ['BindAddress', 'MediaRoot', 'Password', 'PasswordBcrypt', 'Port']
-    if set(keys) > set(config['photobackup']):
-        error("config file incomplete, please regenerate!")
+    try:
+        if set(keys) > set(config['photobackup']):
+            error("config file incomplete, please regenerate!")
+            init_config()
+    except KeyError:
+        error("Main key not found, regenerating the config file!")
         init_config()
+      
     return config['photobackup']
 
 
