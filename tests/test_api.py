@@ -21,7 +21,7 @@ upfile_dict = {'upfile': open(upfile, 'rb')}
 file_to_remove = os.path.join(config['MediaRoot'], upfile_name)
 try:
     os.remove(file_to_remove)
-except FileNotFoundError:
+except OSError:  # should be FileNotFoundError for Python > 3.2
     pass
 
 
@@ -60,4 +60,3 @@ def test_nofilesize400():
     payload = {'password': config['Password'] }
     r = requests.post(url, data=payload, files=upfile_dict)
     assert r.status_code == 400
-
