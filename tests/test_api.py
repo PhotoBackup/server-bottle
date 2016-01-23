@@ -5,7 +5,7 @@ import os
 import requests
 
 
-# read config file
+# read server config file
 filename = os.path.expanduser("~/.photobackup")
 parser = configparser.ConfigParser()
 parser.read_file(open(filename))
@@ -60,3 +60,25 @@ def test_nofilesize400():
     payload = {'password': config['Password'] }
     r = requests.post(url, data=payload, files=upfile_dict)
     assert r.status_code == 400
+
+
+# def test_sendfile200():
+#     """ Test the status when posting with all the right parameters. """
+#     payload = {
+#         'password': config['Password'],
+#         'filesize': os.stat(upfile).st_size
+#     }
+#     print(payload)
+#     print(url, payload, upfile_dict)
+#     r = requests.post(url, data=payload, files=upfile_dict)
+#     assert r.status_code == 200
+
+
+def test_testendpoint():
+    """ Test the status when posting with the right password, an upfile
+        but no file size parameter. """
+    payload = {'password': config['Password'] }
+    r = requests.post(url + '/test', data=payload)
+    assert r.status_code == 200
+
+

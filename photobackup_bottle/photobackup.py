@@ -113,7 +113,7 @@ def save_file(upfile, filesize):
         # save file
         log.info("upfile path: " + path)
         #import ipdb;ipdb.set_trace()
-        upfile.save(path)
+        upfile.save(config['MediaRoot'])
 
         # check file size in request against written file size
         if filesize != os.stat(path).st_size:
@@ -124,7 +124,7 @@ def save_file(upfile, filesize):
 
     else:
         warn("file " + path + " is incomplete, resaving!")
-        upfile.save(path)
+        upfile.save(config['MediaRoot'])
 
 
 # Bottle routes
@@ -168,7 +168,7 @@ def test():
         end(500, "Can't write to 'MediaRoot' directory!")
     finally:
         os.remove(testfile)
-        info("Test succeeded \o/")
+        log.info("Test succeeded \o/")
 
 
 log = create_logger()
