@@ -64,17 +64,17 @@ def read_config():
     try:
         config.read_file(open(filename))
     except EnvironmentError:
-        error("can't read configuration file, running 'photobackup init'")
+        log.error("can't read configuration file, running 'photobackup init'")
         init_config()
 
     # Check if mandatory keys are in the file
     keys = ['BindAddress', 'MediaRoot', 'Password', 'PasswordBcrypt', 'Port']
     try:
         if set(keys) > set(config['photobackup']):
-            error("config file incomplete, please regenerate!")
+            log.error("config file incomplete, please regenerate!")
             init_config()
     except KeyError:
-        error("Main key not found, regenerating the config file!")
+        log.error("Main key not found, regenerating the config file!")
         init_config()
       
     return config['photobackup']
@@ -82,13 +82,18 @@ def read_config():
 
 def end(code, message):
     """ Aborts the request and returns the given error. """
-    error(message)
+    log.error(message)
     abort(code, message)
 
 
 def validate_password(request, isTest = False):
-    """ Validates the password given in the request against the stored Bcrypted one. """
-    password = request.forms.get('password').encode('utf-8')
+    """ Validates the password given in the request
+        against the stored Bcrypted one. """
+    password = None
+    try:
+        password = request.forms.get('password').encode('utf-8')
+    except AttributeError:
+        end(403, "No password in request")
 
     if 'PasswordBcrypt' in config:
         passcrypt = config['PasswordBcrypt'].encode('utf-8')
@@ -106,7 +111,8 @@ def save_file(upfile, filesize):
     if not os.path.exists(path):
 
         # save file
-        info("upfile path: " + path)
+        log.info("upfile path: " + path)
+        #import ipdb;ipdb.set_trace()
         upfile.save(path)
 
         # check file size in request against written file size

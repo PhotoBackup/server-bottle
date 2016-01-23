@@ -6,6 +6,7 @@ python:
   - "3.5"
 # command to install dependencies
 install:
+  - pip install requests pytest
   - python setup.py install
 script:
-  - nosetests
+  - photobackup run & py.test tests
