@@ -13,8 +13,8 @@ config = parser['photobackup']
 
 # stuff we need
 url = 'http://' + config['BindAddress'] + ':' + config['Port']
-upfile_name = 'activate'
-upfile = os.path.join('venv', 'bin', upfile_name)
+upfile_name = 'test_api.py'
+upfile = os.path.join('tests', upfile_name)
 upfile_dict = {'upfile': open(upfile, 'rb')}
 
 # clean before testing
@@ -60,5 +60,4 @@ def test_nofilesize400():
     payload = {'password': config['Password'] }
     r = requests.post(url, data=payload, files=upfile_dict)
     assert r.status_code == 400
-
 
