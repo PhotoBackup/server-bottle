@@ -15,7 +15,6 @@ config = parser['photobackup']
 url = 'http://' + config['BindAddress'] + ':' + config['Port']
 upfile_name = 'test_api.py'
 upfile = os.path.join('tests', upfile_name)
-upfile_dict = {'upfile': open(upfile, 'rb')}
 
 # clean before testing
 file_to_remove = os.path.join(config['MediaRoot'], upfile_name)
@@ -58,7 +57,7 @@ def test_nofilesize400():
     """ Test the status when posting with the right password, an upfile
         but no file size parameter. """
     payload = {'password': config['Password'] }
-    r = requests.post(url, data=payload, files=upfile_dict)
+    r = requests.post(url, data=payload, files={'upfile': open(upfile, 'rb')})
     assert r.status_code == 400
 
 
@@ -68,9 +67,18 @@ def test_sendfile200():
         'password': config['Password'],
         'filesize': os.stat(upfile).st_size
     }
-    # print(url, payload, upfile_dict)
-    r = requests.post(url, data=payload, files=upfile_dict)
+    r = requests.post(url, data=payload, files={'upfile': open(upfile, 'rb')})
     assert r.status_code == 200
+
+
+def test_resendfile409():
+    """ Test the status when reposting with all the right parameters. """
+    payload = {
+        'password': config['Password'],
+        'filesize': os.stat(upfile).st_size
+    }
+    r = requests.post(url, data=payload, files={'upfile': open(upfile, 'rb')})
+    assert r.status_code == 409
 
 
 def test_testendpoint():
