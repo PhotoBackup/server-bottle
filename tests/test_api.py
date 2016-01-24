@@ -22,7 +22,7 @@ file_to_remove = os.path.join(config['MediaRoot'], upfile_name)
 try:
     os.remove(file_to_remove)
 except OSError:  # should be FileNotFoundError for Python > 3.2
-    pass
+    print("File does not exist, no need to remove it.")
 
 
 #########
@@ -62,16 +62,15 @@ def test_nofilesize400():
     assert r.status_code == 400
 
 
-# def test_sendfile200():
-#     """ Test the status when posting with all the right parameters. """
-#     payload = {
-#         'password': config['Password'],
-#         'filesize': os.stat(upfile).st_size
-#     }
-#     print(payload)
-#     print(url, payload, upfile_dict)
-#     r = requests.post(url, data=payload, files=upfile_dict)
-#     assert r.status_code == 200
+def test_sendfile200():
+    """ Test the status when posting with all the right parameters. """
+    payload = {
+        'password': config['Password'],
+        'filesize': os.stat(upfile).st_size
+    }
+    # print(url, payload, upfile_dict)
+    r = requests.post(url, data=payload, files=upfile_dict)
+    assert r.status_code == 200
 
 
 def test_testendpoint():
@@ -80,5 +79,3 @@ def test_testendpoint():
     payload = {'password': config['Password'] }
     r = requests.post(url + '/test', data=payload)
     assert r.status_code == 200
-
-
