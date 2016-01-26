@@ -11,4 +11,4 @@ install:
 script:
   - rm -f /home/travis/.photobackup
   - printf '[photobackup]\nBindAddress = 127.0.0.1\nMediaRoot = /tmp\nPort = 8420\nPassword = 2c1ee68372215b1ce064426b5cdbd4ef2581ace0dd3b21fa2be27f364827242e83f68b68be03f5b3e24be5d1b4315f98a0a96d19713fb3a19dc455fb6adc3431\nPasswordBcrypt = $2b$12$ghLyUVMOgbZ7bTOVqMIs0ePb0rDJNtvpKpF4Pb7JFSOHMBWtSbI2G\n' > /home/travis/.photobackup
-  - photobackup run & py.test tests
+  - photobackup run & sleep 2 && py.test tests
