@@ -182,12 +182,14 @@ config = read_config()
 
 def main():
     """ Prepares and launches the bottle app. """
-    app = bottle.default_app()
     arguments = docopt(__doc__, version='PhotoBackup ' + __version__)
 
     if (arguments['init']):
         init_config()
     elif (arguments['run']):
+        app = bottle.default_app()
+        if 'HTTPPrefix' in config:
+            app.mount(config['HTTPPrefix'], app)
         app.run(port=config['Port'], host=config['BindAddress'])
 
 
