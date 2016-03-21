@@ -129,7 +129,7 @@ def save_file(upfile, filesize):
             log.info("File already removed, strange but cool...")
         try:
             upfile.save(config['MediaRoot'])
-        except IOError:
+        except OSError:
             log.error("Impossible to save the file...")
 
 
