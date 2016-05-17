@@ -43,7 +43,6 @@ from logbook import info, warn, error, Logger, StreamHandler
 from . import __version__, init
 
 
-
 def create_logger():
     """ Creates the logger fpr this module. """
     StreamHandler(sys.stdout).push_application()
@@ -76,7 +75,6 @@ def read_config():
     except KeyError:
         log.error("Main key not found, regenerating the config file!")
         init_config()
-      
     return config['photobackup']
 
 
@@ -86,7 +84,7 @@ def end(code, message):
     abort(code, message)
 
 
-def validate_password(request, isTest = False):
+def validate_password(request, isTest=False):
     """ Validates the password given in the request
         against the stored Bcrypted one. """
     password = None
@@ -94,6 +92,8 @@ def validate_password(request, isTest = False):
         password = request.forms.get('password').encode('utf-8')
     except AttributeError:
         end(403, "No password in request")
+    # except TypeError:
+      #  end(400, "No form in request")
 
     if 'PasswordBcrypt' in config:
         passcrypt = config['PasswordBcrypt'].encode('utf-8')
@@ -179,6 +179,7 @@ def test():
 
 log = create_logger()
 config = read_config()
+
 
 def main():
     """ Prepares and launches the bottle app. """
