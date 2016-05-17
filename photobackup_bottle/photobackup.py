@@ -92,8 +92,6 @@ def validate_password(request, isTest=False):
         password = request.forms.get('password').encode('utf-8')
     except AttributeError:
         end(403, "No password in request")
-    # except TypeError:
-      #  end(400, "No form in request")
 
     if 'PasswordBcrypt' in config:
         passcrypt = config['PasswordBcrypt'].encode('utf-8')
