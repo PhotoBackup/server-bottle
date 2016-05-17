@@ -12,6 +12,14 @@ The Python3 implementation of PhotoBackup server, made with
 [bottle](http://bottlepy.org/). It follows the
 [official API](https://github.com/PhotoBackup/api/blob/master/api.raml), currently in [version 2](https://github.com/PhotoBackup/api/releases/tag/v2).
 
+## Requirements
+
+You need:
+
+- [Python3](https://www.python.org/) ;
+- [pip](https://pip.pypa.io/en/stable/) ;
+- libffi-dev (installable though `[apt|yum] install libffi-dev`)
+
 ## Installation
 
 Install through [PyPI](https://pypi.python.org/pypi):
