@@ -95,7 +95,7 @@ class TestClass:
         r = requests.post(url + '/test', data=payload)
         assert r.status_code == 200
 
-    def test_dashboard200(self):
-        """ Test the simplest route of the server. """
-        r = requests.get(url + '/dashboard')
-        assert r.status_code == 200
+    # def test_dashboard200(self):
+    #     """ Test the simplest route of the server. """
+    #     r = requests.get(url + '/dashboard')
+    #     assert r.status_code == 200

@@ -19,8 +19,8 @@
 """PhotoBackup Python server.
 
 Usage:
-  photobackup init <username>
-  photobackup run <username>
+  photobackup init [<username>]
+  photobackup run [<username>]
   photobackup list
   photobackup (-h | --help)
   photobackup --version
@@ -57,10 +57,14 @@ def init_config():
 
 
 def print_list():
-    print('Runnable PhotoBackup configurations are:\n')
+    sections = '\n'.join(get_config().sections())
+    sections = sections.replace('photobackup-', '- ')
+    sections = sections.replace('photobackup', '<unnamed one>')
+    print('Runnable PhotoBackup configurations are:')
+    print(sections)
 
 
-def read_config():
+def get_config():
     """ Set configuration file data into local dictionnary. """
     filename = os.path.expanduser("~/.photobackup")
     config = configparser.RawConfigParser()
@@ -70,7 +74,11 @@ def read_config():
     except EnvironmentError:
         log.error("can't read configuration file, running 'photobackup init'")
         init_config()
+    return config
 
+
+def read_config():
+    config = get_config()
     # Check if mandatory keys are in the file
     keys = ['BindAddress', 'MediaRoot', 'Password', 'PasswordBcrypt', 'Port']
     try:
