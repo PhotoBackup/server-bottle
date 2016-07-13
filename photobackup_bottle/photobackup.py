@@ -19,8 +19,9 @@
 """PhotoBackup Python server.
 
 Usage:
-  photobackup init
-  photobackup run
+  photobackup init <username>
+  photobackup run <username>
+  photobackup list
   photobackup (-h | --help)
   photobackup --version
 
@@ -53,6 +54,10 @@ def init_config():
     """ Launch init.py script to create configuration file on user's disk. """
     init.init()
     sys.exit("\nCreated, now launch PhotoBackup server with 'photobackup run'")
+
+
+def print_list():
+    print('Runnable PhotoBackup configurations are:\n')
 
 
 def read_config():
@@ -190,6 +195,8 @@ def main():
         if 'HTTPPrefix' in config:
             app.mount(config['HTTPPrefix'], app)
         app.run(port=config['Port'], host=config['BindAddress'])
+    elif (arguments['list']):
+        print_list()
 
 
 if __name__ == '__main__':
