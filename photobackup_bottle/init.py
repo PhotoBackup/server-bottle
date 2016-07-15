@@ -53,7 +53,7 @@ def writable_by(dirname, name, user_or_group):
     return False
 
 
-def init():
+def init(username=None):
     """ Initializes the PhotoBackup configuration file. """
     print("""===============================
 PhotoBackup_bottle init process
@@ -84,14 +84,18 @@ PhotoBackup_bottle init process
     passhash = bcrypt.hashpw(pass_sha, bcrypt.gensalt())
 
     # save in config file
+    config_file = os.path.expanduser("~/.photobackup")
     config = configparser.ConfigParser()
     config.optionxform = str  # to keep case of keys
-    config['photobackup'] = {'BindAddress': '127.0.0.1',
-                             'MediaRoot': media_root,
-                             'Password': pass_sha.decode(),
-                             'PasswordBcrypt': passhash.decode(),
-                             'Port': 8420}
-    with open(os.path.expanduser("~/.photobackup"), 'w') as configfile:
+    config.read(config_file)  # to keep existing data
+    suffix = '-' + username if username else ''
+    config_key = 'photobackup' + suffix
+    config[config_key] = {'BindAddress': '127.0.0.1',
+                          'MediaRoot': media_root,
+                          'Password': pass_sha.decode(),
+                          'PasswordBcrypt': passhash.decode(),
+                          'Port': 8420}
+    with open(config_file, 'w') as configfile:
         config.write(configfile)
 
 

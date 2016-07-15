@@ -50,13 +50,14 @@ def create_logger():
     return Logger('PhotoBackup')
 
 
-def init_config():
+def init_config(username=None):
     """ Launch init.py script to create configuration file on user's disk. """
-    init.init()
+    init.init(username)
     sys.exit("\nCreated, now launch PhotoBackup server with 'photobackup run'")
 
 
 def print_list():
+    """ Print the existing PhotoBackup configurations. """
     sections = '\n'.join(get_config().sections())
     sections = sections.replace('photobackup-', '- ')
     sections = sections.replace('photobackup', '<unnamed one>')
@@ -64,31 +65,26 @@ def print_list():
     print(sections)
 
 
-def get_config():
+def read_config(username=None):
     """ Set configuration file data into local dictionnary. """
-    filename = os.path.expanduser("~/.photobackup")
+    config_file = os.path.expanduser("~/.photobackup")
     config = configparser.RawConfigParser()
     config.optionxform = lambda option: option  # to keep case of keys
     try:
-        config.read_file(open(filename))
+        config.read_file(open(config_file))
     except EnvironmentError:
         log.error("can't read configuration file, running 'photobackup init'")
-        init_config()
-    return config
+        init_config(username)
 
+    suffix = '-' + username if username else ''
+    config_key = 'photobackup' + suffix
 
-def read_config():
-    config = get_config()
-    # Check if mandatory keys are in the file
-    keys = ['BindAddress', 'MediaRoot', 'Password', 'PasswordBcrypt', 'Port']
+    values = None
     try:
-        if set(keys) > set(config['photobackup']):
-            log.error("config file incomplete, please regenerate!")
-            init_config()
+        values = config[config_key]
     except KeyError:
-        log.error("Main key not found, regenerating the config file!")
-        init_config()
-    return config['photobackup']
+        values = None
+    return values
 
 
 def end(code, message):
@@ -188,16 +184,16 @@ def test():
         log.info("Test succeeded \o/")
 
 
+# variables
+arguments = docopt(__doc__, version='PhotoBackup ' + __version__)
 log = create_logger()
-config = read_config()
+config = read_config(arguments['<username>'])
 
 
 def main():
     """ Prepares and launches the bottle app. """
-    arguments = docopt(__doc__, version='PhotoBackup ' + __version__)
-
     if (arguments['init']):
-        init_config()
+        init_config(arguments['<username>'])
     elif (arguments['run']):
         app = bottle.default_app()
         if 'HTTPPrefix' in config:
