@@ -25,20 +25,37 @@ finally:
     url += prefix
     print("URL = " + url)
 
-# clean before testing
-file_to_remove = os.path.join(config['MediaRoot'], upfile_name)
-try:
-    os.remove(file_to_remove)
-except OSError:  # should be FileNotFoundError for Python > 3.2
-    print("File does not exist, no need to remove it.")
-
 
 #########
 # Tests #
 #########
+
+def remove_sent_file():
+    file_to_remove = os.path.join(config['MediaRoot'], upfile_name)
+    try:
+        os.remove(file_to_remove)
+        print('File ' + file_to_remove + ' has been removed')
+    except OSError:  # should be FileNotFoundError for Python > 3.2
+        print("File does not exist, no need to remove it.")
+
+
 class TestClass:
 
-    def test_root200(self):
+    def setup_method(self, method):
+        """ clean before each test """
+        remove_sent_file()
+
+    def teardown_method(self, method):
+        """ clean after each test """
+        remove_sent_file()
+
+    def test_testendpoint200(self):
+        """ Test the status when posting a test. """
+        payload = {'password': config['Password']}
+        r = requests.post(url + '/test', data=payload)
+        assert r.status_code == 200
+
+    def test_rootendpoint200(self):
         """ Test the simplest route of the server. """
         r = requests.get(url)
         assert r.status_code == 200
@@ -48,7 +65,7 @@ class TestClass:
         r = requests.post(url)
         assert r.status_code == 403
 
-    def test_wrongfile403(self):
+    def test_wrongpwd403(self):
         """ Test the status when posting with a wrong password. """
         payload = {'password': 'WRONG PASSWORD'}
         r = requests.post(url, data=payload)
@@ -86,14 +103,9 @@ class TestClass:
         }
         r = requests.post(url, data=payload,
                           files={'upfile': open(upfile, 'rb')})
+        r = requests.post(url, data=payload,
+                          files={'upfile': open(upfile, 'rb')})
         assert r.status_code == 409
-
-    def test_testendpoint(self):
-        """ Test the status when posting with the right password, an upfile
-            but no file size parameter. """
-        payload = {'password': config['Password']}
-        r = requests.post(url + '/test', data=payload)
-        assert r.status_code == 200
 
     # def test_dashboard200(self):
     #     """ Test the simplest route of the server. """
