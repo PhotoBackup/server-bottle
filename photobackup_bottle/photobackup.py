@@ -114,7 +114,7 @@ def validate_password(request, isTest=False):
 
 def save_file(upfile, filesize):
     """ Saves the sent file locally. """
-    path = os.path.join(config['MediaRoot'], upfile.raw_filename)
+    path = os.path.join(config['MediaRoot'], os.path.basename(upfile.raw_filename))
     if not os.path.exists(path):
 
         # save file
