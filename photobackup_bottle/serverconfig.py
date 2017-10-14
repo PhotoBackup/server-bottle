@@ -114,16 +114,18 @@ PhotoBackup_bottle init process
             print('[WARN] Directory {0} is not writable by {1}, check it!'.format(media_root, server_user))
 
     # ask for the server password
-    password = getpass.getpass(prompt='The server password: ')
-    pass_sha = hashlib.sha512(
-        password.encode('utf-8')).hexdigest().encode('utf-8')
-    passhash = bcrypt.hashpw(pass_sha, bcrypt.gensalt())
+    plaintext_password = getpass.getpass(prompt='The server password: ')
+
+    # sha512 on the password - adds entropy, allows pass >72 chars, no issues with funky Unicode chars
+    pass_sha = hashlib.sha512(plaintext_password.encode('utf-8')).hexdigest().encode('utf-8')
+
+    pass_bcrypt = bcrypt.hashpw(pass_sha, bcrypt.gensalt())
 
     # save the config file
 
     config = configparser.ConfigParser()
     config.optionxform = str  # to keep case of keys
-    config.read(_config_file)  # to keep existing data; doesn't file if there's no file yet
+    config.read(_config_file)  # to keep existing data; doesn't fail if there's no file yet
 
     suffix = '-' + section if section else ''
     config_key = 'photobackup' + suffix
@@ -131,7 +133,7 @@ PhotoBackup_bottle init process
     config[config_key] = {'BindAddress': '127.0.0.1',
                           'MediaRoot': media_root,
                           'Password': pass_sha.decode(),
-                          'PasswordBcrypt': passhash.decode(),
+                          'PasswordBcrypt': pass_bcrypt.decode(),
                           'Port': 8420}
 
     with open(_config_file, 'w') as configfile:
@@ -162,6 +164,18 @@ def read_config(section=None):
     except KeyError:
         print("The configuration file does not have {} section".format(config_key))
         sys.exit(1)
+
+    # sanitize - all required settings are present
+    if 'PasswordBcrypt' not in values:      # legacy config, no bcrypted password - generate it now
+        if 'Password' not in values:
+            print('ERROR - the config file does not have nor PasswordBcrypt, nor Password.')
+            sys.exit(1)
+        values['PasswordBcrypt'] = bcrypt.hashpw(values['Password'].encode('utf-8'), bcrypt.gensalt())
+
+    for key in ('BindAddress', 'MediaRoot', 'Port'):
+        if key not in values:
+            print('The requered setting {} is not in the config file; exiting.'.format(key))
+            sys.exit(1)
 
     return values
 

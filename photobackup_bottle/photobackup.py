@@ -34,6 +34,7 @@ Options:
 
 import os
 import sys
+from functools import wraps   # better decorators
 # pipped
 import bcrypt
 from bottle import abort, redirect, request, route, run
@@ -51,22 +52,23 @@ def end(code, message):
     abort(code, message)
 
 
-def validate_password(request, isTest=False):
+def validate_password(func):
     """ Validates the password given in the request against the stored Bcrypted one. """
-    password = None
-    try:
-        password = request.forms.get('password').encode('utf-8')
-    except AttributeError:
-        end(403, "No password in request")
-
-    if 'PasswordBcrypt' in config:
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        password = None
+        try:
+            password = request.forms.get('password').encode('utf-8')
+        except AttributeError:
+            end(403, 'No password in request')
+        
         passcrypt = config['PasswordBcrypt'].encode('utf-8')
-        if bcrypt.hashpw(password, passcrypt) != passcrypt:
-            end(403, "wrong password!")
-    elif 'Password' in config and config['Password'] != password:
-        end(403, "wrong password!")
-    elif isTest:
-        end(401, "There's no password in server configuration!")
+        if not bcrypt.checkpw(password, passcrypt):
+            end(403, 'wrong password!')
+
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 def save_file(upfile, filesize):
@@ -105,10 +107,9 @@ def index():
 
 
 @route('/', method='POST')
+@validate_password
 def save_image():
     """ Saves the given image to the directory set in the configured. """
-    validate_password(request)
-
     upfile = request.files.get('upfile')
     if not upfile:
         end(401, "no file in the request!")
@@ -123,10 +124,9 @@ def save_image():
 
 
 @route('/test', method='POST')
+@validate_password
 def test():
     """ Tests the server capabilities to handle a POST requests. """
-    validate_password(request, True)
-
     if not os.path.exists(config['MediaRoot']):
         end(500, "'MediaRoot' directory does not exist!")
 
