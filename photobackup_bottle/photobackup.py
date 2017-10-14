@@ -31,7 +31,7 @@ Options:
 """
 
 # stlib
-import configparser
+
 import os
 import sys
 # pipped
@@ -39,54 +39,12 @@ import bcrypt
 from bottle import abort, redirect, request, route, run
 import bottle
 from docopt import docopt
-from logbook import info, warn, error, Logger, StreamHandler
+from logbook import Logger, StreamHandler
 # local
-from . import __version__, init
+from . import __version__, serverconfig
 
 
-def create_logger():
-    """ Creates the logger fpr this module. """
-    StreamHandler(sys.stdout).push_application()
-    return Logger('PhotoBackup')
-
-
-def init_config(username=None):
-    """ Launch init.py script to create configuration file on user's disk. """
-    init.init(username)
-    sys.exit("\nCreated, now launch PhotoBackup server with 'photobackup run'")
-
-
-def print_list():
-    """ Print the existing PhotoBackup configurations. """
-    sections = '\n'.join(get_config().sections())
-    sections = sections.replace('photobackup-', '- ')
-    sections = sections.replace('photobackup', '<unnamed one>')
-    print('Runnable PhotoBackup configurations are:')
-    print(sections)
-
-
-def read_config(username=None):
-    """ Set configuration file data into local dictionnary. """
-    config_file = os.path.expanduser("~/.photobackup")
-    config = configparser.RawConfigParser()
-    config.optionxform = lambda option: option  # to keep case of keys
-    try:
-        config.read_file(open(config_file))
-    except EnvironmentError:
-        log.error("can't read configuration file, running 'photobackup init'")
-        init_config(username)
-
-    suffix = '-' + username if username else ''
-    config_key = 'photobackup' + suffix
-
-    values = None
-    try:
-        values = config[config_key]
-    except KeyError:
-        values = None
-    return values
-
-
+# Server functions
 def end(code, message):
     """ Aborts the request and returns the given error. """
     log.error(message)
@@ -184,22 +142,50 @@ def test():
         log.info("Test succeeded \o/")
 
 
+# CLI handlers - they don't use the log, but print()
+def init_config(username=None):
+    """ Creates the configuration file. """
+    serverconfig.init(username)
+    print("Created, now launch PhotoBackup server with 'photobackup run'")
+    sys.exit(0)
+
+
+def print_list():
+    """ Print the existing PhotoBackup sections. """
+    print(serverconfig.return_config_sections())
+    sys.exit(0)
+
+
+# internal helpers
+def _create_logger():
+    """ Creates the logger fpr this module. """
+    StreamHandler(sys.stdout).push_application()
+    return Logger('PhotoBackup')
+
 # variables
 arguments = docopt(__doc__, version='PhotoBackup ' + __version__)
-log = create_logger()
-config = read_config(arguments['<username>'])
+
+# the server configuraiton dict; will be filled-in in main()
+config = None
+
+log = _create_logger()
 
 
 def main():
     """ Prepares and launches the bottle app. """
-    if (arguments['init']):
+    if arguments['init']:
         init_config(arguments['<username>'])
-    elif (arguments['run']):
+        sys.exit(0)
+
+    global config
+    config = serverconfig.read_config(arguments['<username>'])
+
+    if arguments['run']:
         app = bottle.default_app()
         if 'HTTPPrefix' in config:
             app.mount(config['HTTPPrefix'], app)
         app.run(port=config['Port'], host=config['BindAddress'])
-    elif (arguments['list']):
+    elif arguments['list']:
         print_list()
 
 
