@@ -52,8 +52,7 @@ def end(code, message):
 
 
 def validate_password(request, isTest=False):
-    """ Validates the password given in the request
-        against the stored Bcrypted one. """
+    """ Validates the password given in the request against the stored Bcrypted one. """
     password = None
     try:
         password = request.forms.get('password').encode('utf-8')
@@ -71,7 +70,7 @@ def validate_password(request, isTest=False):
 
 
 def save_file(upfile, filesize):
-    """ Saves the sent file locally. """
+    """ Saves the received file locally. """
     path = os.path.join(config['MediaRoot'], os.path.basename(upfile.raw_filename))
     if not os.path.exists(path):
 
@@ -107,7 +106,7 @@ def index():
 
 @route('/', method='POST')
 def save_image():
-    """ Saves the given image to the parameterized directory. """
+    """ Saves the given image to the directory set in the configured. """
     validate_password(request)
 
     upfile = request.files.get('upfile')
@@ -125,7 +124,7 @@ def save_image():
 
 @route('/test', method='POST')
 def test():
-    """ Tests the server capabilities to handle POST requests. """
+    """ Tests the server capabilities to handle a POST requests. """
     validate_password(request, True)
 
     if not os.path.exists(config['MediaRoot']):
@@ -143,15 +142,17 @@ def test():
 
 
 # CLI handlers - they don't use the log, but print()
-def init_config(username=None):
-    """ Creates the configuration file. """
-    serverconfig.init(username)
+def init_config(section=None):
+    """ Creates the configuration file.
+    param section: Optional argument of a custom section that'll be created in the config file.
+    """
+    serverconfig.init(section)
     print("Created, now launch PhotoBackup server with 'photobackup run'")
     sys.exit(0)
 
 
 def print_list():
-    """ Print the existing PhotoBackup sections. """
+    """ Prints the existing PhotoBackup configuration sections. """
     print(serverconfig.return_config_sections())
     sys.exit(0)
 
