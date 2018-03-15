@@ -32,11 +32,12 @@ Options:
 
 # stlib
 import configparser
+import json
 import os
 import sys
 # pipped
 import bcrypt
-from bottle import abort, redirect, request, route, run
+from bottle import abort, redirect, request, response, route, run
 import bottle
 from docopt import docopt
 from logbook import info, warn, error, Logger, StreamHandler
@@ -90,7 +91,9 @@ def read_config(username=None):
 def end(code, message):
     """ Aborts the request and returns the given error. """
     log.error(message)
-    abort(code, message)
+    response.status = code
+    response.content_type = 'application/json'
+    return json.dumps({'error': message})
 
 
 def validate_password(request, isTest=False):
@@ -100,16 +103,16 @@ def validate_password(request, isTest=False):
     try:
         password = request.forms.get('password').encode('utf-8')
     except AttributeError:
-        end(403, "No password in request")
+        return end(403, "No password in request")
 
     if 'PasswordBcrypt' in config:
         passcrypt = config['PasswordBcrypt'].encode('utf-8')
         if bcrypt.hashpw(password, passcrypt) != passcrypt:
-            end(403, "wrong password!")
+            return end(403, "wrong password!")
     elif 'Password' in config and config['Password'] != password:
-        end(403, "wrong password!")
+        return end(403, "wrong password!")
     elif isTest:
-        end(401, "There's no password in server configuration!")
+        return end(401, "There's no password in server configuration!")
 
 
 def save_file(upfile, filesize):
@@ -123,10 +126,10 @@ def save_file(upfile, filesize):
 
         # check file size in request against written file size
         if filesize != os.stat(path).st_size:
-            end(411, "file sizes do not match!")
+            return end(411, "file sizes do not match!")
 
     elif filesize == os.stat(path).st_size:
-        end(409, "file exists and is complete")
+        return end(409, "file exists and is complete")
 
     else:
         log.warn("file " + path + " is incomplete, resaving!")
@@ -140,6 +143,12 @@ def save_file(upfile, filesize):
             log.error("Impossible to save the file...")
 
 
+def get_files():
+    """ List all locally saved files. """
+    return [entry.name for entry in os.scandir(config['MediaRoot'])
+            if not entry.name.startswith('.') and entry.is_file()]
+
+
 # Bottle routes
 @route('/')
 def index():
@@ -150,38 +159,42 @@ def index():
 @route('/', method='POST')
 def save_image():
     """ Saves the given image to the parameterized directory. """
-    validate_password(request)
+    answer = validate_password(request)
+    if answer:
+        return answer
 
     upfile = request.files.get('upfile')
     if not upfile:
-        end(401, "no file in the request!")
+        return end(401, "no file in the request!")
 
     filesize = -1
     try:
         filesize = int(request.forms.get('filesize'))
+        return save_file(upfile, filesize)
     except TypeError:
-        end(400, "Missing file size in the request!")
-
-    save_file(upfile, filesize)
+        return end(400, "Missing file size in the request!")
 
 
 @route('/test', method='POST')
 def test():
     """ Tests the server capabilities to handle POST requests. """
-    validate_password(request, True)
+    answer = validate_password(request, True)
+    if answer:
+        return answer
 
     if not os.path.exists(config['MediaRoot']):
-        end(500, "'MediaRoot' directory does not exist!")
+        return end(500, "'MediaRoot' directory does not exist!")
 
     testfile = os.path.join(config['MediaRoot'], '.test_file_to_write')
     try:
         with open(testfile, 'w') as tf:
             tf.write('')
+        log.info("Test succeeded \o/")
+        return {'uploaded_files': get_files() }
     except EnvironmentError:
-        end(500, "Can't write to 'MediaRoot' directory!")
+        return end(500, "Can't write to 'MediaRoot' directory!")
     finally:
         os.remove(testfile)
-        log.info("Test succeeded \o/")
 
 
 # variables
