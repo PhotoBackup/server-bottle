@@ -16,7 +16,7 @@ The Python3 implementation of PhotoBackup server, made with
 
 You need:
 
-- [Python3](https://www.python.org/) ;
+- [Python3.5 or higher](https://www.python.org/) ;
 - [pip](https://pip.pypa.io/en/stable/) ;
 - libffi-dev (installable though `[apt|yum] install libffi-dev`)
 
